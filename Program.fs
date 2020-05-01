@@ -33,7 +33,7 @@ module Program =
 
     let init () =
         { planer = []
-          modus = EasyView }
+          modus = NewPresent }
 
     let update (msg: Msg) state =
         match msg with
@@ -105,41 +105,81 @@ module Program =
             DockPanel.margin 5.0
             DockPanel.children [
                 TextBlock.create [
+                    TextBlock.dock Dock.Top
                     TextBlock.text "Lege ein neues Geschenk an"
                 ]
-                StackPanel.create [
-                    StackPanel.orientation Orientation.Vertical
-                    StackPanel.children [
+                Grid.create [
+                    Grid.columnDefinitions "1*, 1*"
+                    Grid.rowDefinitions "1*, 1*"
+                    Grid.children [
                         StackPanel.create [
-                            StackPanel.orientation Orientation.Horizontal
+                            StackPanel.orientation Orientation.Vertical
+                            StackPanel.margin 25.0
+                            StackPanel.column 0
+                            StackPanel.row 0
+                            StackPanel.spacing 15.0
+                            StackPanel.name "Present Info"
                             StackPanel.children [
-                                StackPanel.create [
-                                    StackPanel.name "Present Info"
-
+                                TextBox.create [
+                                    TextBox.watermark "Für wen soll das Geschenk sein?"
+                                    TextBox.width 400.0
                                 ]
-                                StackPanel.create [
-                                    StackPanel.name "Max Ausgabe"
-                                    StackPanel.children [
-                                        TextBox.create [
-                                            TextBox.watermark " Was soll höchstens für die Person ausgegeben werden?"
-                                        ]
-                                    ]
+                                TextBox.create [
+                                    TextBox.watermark "Was möchtest du verschenken?"
+                                    TextBox.width 400.0
+                                ]
+                                TextBox.create [
+                                    TextBox.watermark "Was kostet es?"
+                                    TextBox.width 400.0
                                 ]
                             ]
                         ]
                         StackPanel.create [
-                            StackPanel.orientation Orientation.Horizontal
+                            StackPanel.orientation Orientation.Vertical
+                            StackPanel.margin 25.0
+                            StackPanel.column 1
+                            StackPanel.row 0
+                            StackPanel.name "Max Ausgabe"
                             StackPanel.children [
-                                StackPanel.create [
-                                    StackPanel.name "Orderd?"
-
-                                ]
-                                StackPanel.create [
-                                    StackPanel.name "Anteil Info"
+                                TextBox.create [
+                                    TextBox.watermark "Was soll höchstens für die Person ausgegeben werden?"
+                                    TextBox.width 400.0
                                 ]
                             ]
                         ]
+                        StackPanel.create [
+                            StackPanel.orientation Orientation.Vertical
+                            StackPanel.margin 25.0
+                            StackPanel.column 0
+                            StackPanel.row 1
+                            StackPanel.spacing 15.0
+                            StackPanel.name "Orderd?"
+                            StackPanel.children [
+                                TextBox.create [
+                                    TextBox.watermark "Wer besorgt das Geschenk?"
+                                    TextBox.width 400.0
+                                ]
+                                CheckBox.create [
+                                    CheckBox.content "Wurde das Geschenk schon besorgt?"
+                                    CheckBox.padding 25.0
+                                ]
+                            ]
+                        ]
+                        StackPanel.create [
+                            StackPanel.orientation Orientation.Vertical
+                            StackPanel.margin 25.0
+                            StackPanel.column 1
+                            StackPanel.row 1
+                            StackPanel.spacing 15.0
+                            StackPanel.name "Anteil Info"
+                            StackPanel.children [
+                                CheckBox.create [
+                                    CheckBox.content "Ist es ein geteiltes Geschenk?"
+                                    CheckBox.padding 25.0
+                                ]
 
+                            ]
+                        ]
                     ]
                 ]
             ]
