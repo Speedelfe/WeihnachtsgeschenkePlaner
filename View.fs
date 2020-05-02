@@ -1,5 +1,6 @@
 namespace WeihnachtsgeschenkePlaner
 
+open Avalonia
 open Avalonia.Controls
 open Avalonia.Input
 open Avalonia.Layout
@@ -30,6 +31,11 @@ module View =
         | SetMaybePersonName of string option
         | SetMaybePersonPlannedExpenses of float option
 
+    let (|Float|_|) (str: string) =
+        match System.Double.TryParse(str) with
+        | (true,number) -> Some(number)
+        | _ -> None
+
     let init () =
         { planer = []
           modus = NewPresent
@@ -48,7 +54,6 @@ module View =
             let person = {state.newGeschenkEmpfaenger.person with geplanteAusgabe = expense}
             let geschenkEmpfänger = { state.newGeschenkEmpfaenger with person = person}
             {state with newGeschenkEmpfaenger = geschenkEmpfänger}
-
 
     let menu (state: State) dispatch =
         StackPanel.create [
@@ -170,7 +175,11 @@ module View =
                                     TextBox.text (match state.newGeschenkEmpfaenger.person.geplanteAusgabe with | None -> "" | Some expense -> (string expense))
                                     TextBox.watermark "Was soll höchstens für die Person ausgegeben werden?"
                                     TextBox.width 400.0
-                                    TextBox.onTextChanged (fun newExpense -> SetMaybePersonPlannedExpenses (if newExpense = "" then None else Some (float newExpense)) |> dispatch)
+                                    TextBox.onTextChanged (
+                                        function
+                                        | Float newExpense -> Some newExpense |> SetMaybePersonPlannedExpenses |> dispatch
+                                        | _ -> ()
+                                    )
                                 ]
                             ]
                         ]
@@ -235,7 +244,7 @@ module View =
         DockPanel.create [
             DockPanel.children [
                 Border.create [
-                    Border.borderThickness 2.0
+                    Border.borderThickness (Thickness (0.0, 0.0, 2.0, 0.0))
                     Border.borderBrush "black"
                     Border.dock Dock.Left
                     Border.child (menu state dispatch)

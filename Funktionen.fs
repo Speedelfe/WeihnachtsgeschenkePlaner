@@ -9,11 +9,13 @@ open WeihnachtsgeschenkePlaner.Geschenk
 module FileManagement =
     let private filePath = "gift.json"
 
-    let saveGiftList (giftList: PlanningGift list) =
+    let saveAGiftList filePathP (giftList: PlanningGift list) =
         let json =
             giftList
             |> Json.serialize
-        File.WriteAllText (filePath, json)
+        File.WriteAllText (filePathP, json)
+
+    let saveGiftList = saveAGiftList filePath
 
 module GiftManagement =
     let newGift () =
