@@ -3,30 +3,51 @@ namespace WeihnachtsgeschenkePlaner
 module Geschenk =
     type Person = {
         name: string
-        geplanteAusgabe: float
+        plannedExpenses: float
     }
 
-    let createPerson name ausgabe =
+    let createPerson name expense =
         {
-            Person.name = name
-            geplanteAusgabe = ausgabe
+            name = name
+            plannedExpenses = expense
         }
 
-    type Geschenk = {
-        name: string
-        kosten: float
+    type Gift = {
+        description: string
+        totalCost: float
     }
 
-    type Anteil = {
-        beteiligtePerson: Person
-        anteilPerson: float
+    let createGift description cost =
+        {
+            description = description
+            totalCost = cost
+        }
+
+    type Split = {
+        involvedPerson: string
+        splitAmount: float
     }
 
-    type GeschenkEmpfänger = {
+    let createSplit personName amount =
+        {
+            involvedPerson = personName
+            splitAmount = amount
+        }
+
+    type PlanningGift = {
         person: Person
-        geschenk: Geschenk
-        betrag: Anteil List
+        gift: Gift
+        splitList: Split List
     }
+
+    let createPlannedGift person gift splitList =
+        {
+            person = person
+            gift = gift
+            splitList = splitList
+        }
+
+
     type MaybePerson = {
         name: string option
         geplanteAusgabe: float option

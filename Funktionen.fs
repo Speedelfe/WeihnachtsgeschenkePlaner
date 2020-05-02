@@ -1,19 +1,21 @@
 namespace WeihnachtsgeschenkePlaner
 
-open WeihnachtsgeschenkePlaner.Geschenk
+
 open FSharp.Json
 open System.IO
 
-module DateiVerwaltung =
+open WeihnachtsgeschenkePlaner.Geschenk
+
+module FileManagement =
     let private filePath = "gift.json"
 
-    let saveGiftList (giftList: GeschenkEmpfänger list) =
+    let saveGiftList (giftList: PlanningGift list) =
         let json =
             giftList
             |> Json.serialize
         File.WriteAllText (filePath, json)
 
-module GeschenkVerwaltung =
+module GiftManagement =
     let newGift () =
         ()
 

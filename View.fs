@@ -9,7 +9,7 @@ open Avalonia.FuncUI.Elmish
 open System
 
 open WeihnachtsgeschenkePlaner.Geschenk
-open WeihnachtsgeschenkePlaner.GeschenkVerwaltung
+open WeihnachtsgeschenkePlaner.GiftManagement
 
 module View =
     type Modus =
@@ -20,7 +20,7 @@ module View =
         | Stats
 
     type State = {
-        planer: GeschenkEmpfänger list
+        planer: PlanningGift list
         modus: Modus
         newGeschenkEmpfaenger: MaybeGeschenkEmpfänger
     }
@@ -28,6 +28,7 @@ module View =
     type Msg =
         | ChangeMode of Modus
         | SetMaybePersonName of string option
+        | SetMaybePersonPlannedExpenses of float option
 
     let init () =
         { planer = []
@@ -43,6 +44,11 @@ module View =
             let person = { state.newGeschenkEmpfaenger.person with name = name }
             let geschenkEmpfänger = { state.newGeschenkEmpfaenger with person = person }
             { state with newGeschenkEmpfaenger = geschenkEmpfänger}
+        | SetMaybePersonPlannedExpenses expense ->
+            let person = {state.newGeschenkEmpfaenger.person with geplanteAusgabe = expense}
+            let geschenkEmpfänger = { state.newGeschenkEmpfaenger with person = person}
+            {state with newGeschenkEmpfaenger = geschenkEmpfänger}
+
 
     let menu (state: State) dispatch =
         StackPanel.create [
@@ -112,6 +118,19 @@ module View =
                     TextBlock.dock Dock.Top
                     TextBlock.text "Lege ein neues Geschenk an"
                 ]
+                StackPanel.create [
+                    StackPanel.dock Dock.Bottom
+                    StackPanel.orientation Orientation.Horizontal
+                    StackPanel.spacing 10.0
+                    StackPanel.children [
+                        Button.create [
+                            Button.content "Speichern"
+                        ]
+                        Button.create [
+                            Button.content "Zurücksetzen"
+                        ]
+                    ]
+                ]
                 Grid.create [
                     Grid.columnDefinitions "1*, 1*"
                     Grid.rowDefinitions "1*, 1*"
@@ -148,8 +167,10 @@ module View =
                             StackPanel.name "Max Ausgabe"
                             StackPanel.children [
                                 TextBox.create [
+                                    TextBox.text (match state.newGeschenkEmpfaenger.person.geplanteAusgabe with | None -> "" | Some expense -> (string expense))
                                     TextBox.watermark "Was soll höchstens für die Person ausgegeben werden?"
                                     TextBox.width 400.0
+                                    TextBox.onTextChanged (fun newExpense -> SetMaybePersonPlannedExpenses (if newExpense = "" then None else Some (float newExpense)) |> dispatch)
                                 ]
                             ]
                         ]
@@ -215,7 +236,7 @@ module View =
             DockPanel.children [
                 Border.create [
                     Border.borderThickness 2.0
-                    Border.borderBrush "red"
+                    Border.borderBrush "black"
                     Border.dock Dock.Left
                     Border.child (menu state dispatch)
                 ]
