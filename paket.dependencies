@@ -7,3 +7,4 @@ nuget JaggerJo.Avalonia.FuncUI
 nuget JaggerJo.Avalonia.FuncUI.DSL
 nuget JaggerJo.Avalonia.FuncUI.Elmish
 nuget Citrus.Avalonia
+nuget FSharp.Json
