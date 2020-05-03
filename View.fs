@@ -24,70 +24,38 @@ module View =
     type State = {
         planer: PlannedGift list
         modus: Modus
-        newPlannedGift: MaybePlannedGift
+        newGiftState: NewGiftView.State
     }
 
     type Msg =
         | ChangeMode of Modus
-        | SetMaybePersonName of string option
-        | SetMaybePersonPlannedExpenses of float option
-        | SetMaybeGiftDescription of string option
-        | SetMaybeGiftCosts of float option
-        | SetMaybePurchaseStatusWhoBuys of string option
-        | SetMaybePurchaseStatusAlreadyBought of bool
+        | NewGiftMsg of NewGiftView.Msg
         | SaveNewGift
-        | ResetNewGift
-
-    let (|Float|_|) (str: string) =
-        match System.Double.TryParse(str) with
-        | (true,number) -> Some(number)
-        | _ -> None
 
     let init () =
         { planer = []
           modus = NewPresent
-          newPlannedGift = createEmptyMaybePlannedGift () }
+          newGiftState = NewGiftView.init ()
+        }
 
     let update (msg: Msg) state =
         match msg with
         | ChangeMode newMode ->
             { state with modus = newMode }
-        | SetMaybePersonName name ->
-            // TODO: Lenses
-            let person = { state.newPlannedGift.person with name = name }
-            let geschenkEmpfänger = { state.newPlannedGift with person = person }
-            { state with newPlannedGift = geschenkEmpfänger}
-        | SetMaybePersonPlannedExpenses expense ->
-            let person = {state.newPlannedGift.person with plannedExpenses = expense}
-            let geschenkEmpfänger = { state.newPlannedGift with person = person}
-            {state with newPlannedGift = geschenkEmpfänger}
-        | SetMaybeGiftDescription description ->
-            let gift = {state.newPlannedGift.gift with description = description}
-            let geschenkEmpfänger = { state.newPlannedGift with gift = gift}
-            { state with newPlannedGift = geschenkEmpfänger}
-        | SetMaybeGiftCosts costs ->
-            let gift = { state.newPlannedGift.gift with totalCosts = costs}
-            let geschenkEmpfänger = { state.newPlannedGift with gift = gift}
-            {state with newPlannedGift = geschenkEmpfänger}
-        | SetMaybePurchaseStatusWhoBuys whoBuys ->
-            let purchaseStatus = { state.newPlannedGift.purchaseStatus with whoBuys = whoBuys}
-            let geschenkEmpfänger = { state.newPlannedGift with purchaseStatus = purchaseStatus}
-            {state with newPlannedGift = geschenkEmpfänger}
-        | SetMaybePurchaseStatusAlreadyBought alreadyBought ->
-            let purchaseStatus = { state.newPlannedGift.purchaseStatus with alreadyBought = alreadyBought}
-            let geschenkEmpfänger = { state.newPlannedGift with purchaseStatus = purchaseStatus}
-            {state with newPlannedGift = geschenkEmpfänger}
-        | ResetNewGift ->
-            {state with newPlannedGift = createEmptyMaybePlannedGift()}
+        | NewGiftMsg newGiftMsg ->
+            let newState = NewGiftView.update newGiftMsg state.newGiftState
+            { state with newGiftState = newState }
         | SaveNewGift ->
-            match newGift state.newPlannedGift with
+            match newGift state.newGiftState.newPlannedGift with
             | Some plannedGift ->
-                saveGiftList [plannedGift]
-                {state with newPlannedGift = createEmptyMaybePlannedGift()}
+                let newGiftList = state.planer |> List.append [plannedGift]
+                saveGiftList newGiftList
+                {state with
+                    planer = newGiftList
+                    newGiftState = { newPlannedGift = createEmptyMaybePlannedGift() } }
             | _ ->
-                printfn "Gift konnte nicht gespeichert werden\n%A" state.newPlannedGift
+                printfn "Gift konnte nicht gespeichert werden\n%A" state.newGiftState.newPlannedGift
                 state
-
 
     let menu (state: State) dispatch =
         StackPanel.create [
@@ -149,124 +117,6 @@ module View =
             ]
         ]
 
-    let newPresentView (state: State) dispatch =
-        DockPanel.create [
-            DockPanel.margin 5.0
-            DockPanel.children [
-                TextBlock.create [
-                    TextBlock.dock Dock.Top
-                    TextBlock.text "Lege ein neues Geschenk an"
-                ]
-                StackPanel.create [
-                    StackPanel.dock Dock.Bottom
-                    StackPanel.orientation Orientation.Horizontal
-                    StackPanel.spacing 10.0
-                    StackPanel.children [
-                        Button.create [
-                            Button.content "Speichern"
-                            Button.onClick (fun _ -> SaveNewGift |> dispatch)
-                        ]
-                        Button.create [
-                            Button.content "Zurücksetzen"
-                            Button.onClick (fun _ -> ResetNewGift |> dispatch)
-                        ]
-                    ]
-                ]
-                Grid.create [
-                    Grid.columnDefinitions "1*, 1*"
-                    Grid.rowDefinitions "1*, 1*"
-                    Grid.children [
-                        StackPanel.create [
-                            StackPanel.orientation Orientation.Vertical
-                            StackPanel.margin 25.0
-                            StackPanel.column 0
-                            StackPanel.row 0
-                            StackPanel.spacing 15.0
-                            StackPanel.name "Present Info"
-                            StackPanel.children [
-                                TextBox.create [
-                                    TextBox.text (match state.newPlannedGift.person.name with | None -> "" | Some name -> name)
-                                    TextBox.watermark "Für wen soll das Geschenk sein?*"
-                                    TextBox.width 400.0
-                                    TextBox.onTextChanged (fun newName -> SetMaybePersonName (if newName = "" then None else Some newName) |> dispatch)
-                                ]
-                                TextBox.create [
-                                    TextBox.text (match state.newPlannedGift.gift.description with | None -> "" | Some name -> name)
-                                    TextBox.watermark "Was möchtest du verschenken?*"
-                                    TextBox.width 400.0
-                                    TextBox.onTextChanged (fun newGiftDescription -> SetMaybeGiftDescription (if newGiftDescription = "" then None else Some newGiftDescription) |> dispatch)
-                                ]
-                                TextBox.create [
-                                    TextBox.text (match state.newPlannedGift.gift.totalCosts with | None -> "" | Some costs -> (string costs))
-                                    TextBox.watermark "Was kostet es?*"
-                                    TextBox.width 400.0
-                                    TextBox.onTextChanged (
-                                        function
-                                        | Float newGiftCosts -> Some newGiftCosts |> SetMaybeGiftCosts |> dispatch
-                                        | _ -> ()
-                                    )
-                                ]
-                            ]
-                        ]
-                        StackPanel.create [
-                            StackPanel.orientation Orientation.Vertical
-                            StackPanel.margin 25.0
-                            StackPanel.column 1
-                            StackPanel.row 0
-                            StackPanel.name "Max Ausgabe"
-                            StackPanel.children [
-                                TextBox.create [
-                                    TextBox.text (match state.newPlannedGift.person.plannedExpenses with | None -> "" | Some expense -> (string expense))
-                                    TextBox.watermark "Was soll höchstens für die Person ausgegeben werden?"
-                                    TextBox.width 400.0
-                                    TextBox.onTextChanged (
-                                        function
-                                        | Float newExpense -> Some newExpense |> SetMaybePersonPlannedExpenses |> dispatch
-                                        | _ -> ()
-                                    )
-                                ]
-                            ]
-                        ]
-                        StackPanel.create [
-                            StackPanel.orientation Orientation.Vertical
-                            StackPanel.margin 25.0
-                            StackPanel.column 0
-                            StackPanel.row 1
-                            StackPanel.spacing 15.0
-                            StackPanel.name "Orderd?"
-                            StackPanel.children [
-                                TextBox.create [
-                                    TextBox.watermark "Wer besorgt das Geschenk?"
-                                    TextBox.width 400.0
-                                    TextBox.onTextChanged (fun newWhoBuys -> SetMaybePurchaseStatusWhoBuys (if newWhoBuys = "" then None else Some newWhoBuys) |> dispatch)
-                                ]
-                                CheckBox.create [
-                                    CheckBox.content "Wurde das Geschenk schon besorgt?"
-                                    CheckBox.padding 25.0
-                                    CheckBox.onIsPressedChanged (SetMaybePurchaseStatusAlreadyBought >> dispatch)
-                                ]
-                            ]
-                        ]
-                        StackPanel.create [
-                            StackPanel.orientation Orientation.Vertical
-                            StackPanel.margin 25.0
-                            StackPanel.column 1
-                            StackPanel.row 1
-                            StackPanel.spacing 15.0
-                            StackPanel.name "Anteil Info"
-                            StackPanel.children [
-                                CheckBox.create [
-                                    CheckBox.content "Ist es ein geteiltes Geschenk?"
-                                    CheckBox.padding 25.0
-                                ]
-
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        ]
-
     let expensesView (state: State) dispatch =
         DockPanel.create [
             DockPanel.margin 5.0
@@ -281,10 +131,9 @@ module View =
         match state.modus with
         | EasyView -> easyView state dispatch
         | NotEasyView -> notEasyView state dispatch
-        | NewPresent -> newPresentView state dispatch
+        | NewPresent -> NewGiftView.view state.newGiftState (NewGiftMsg >> dispatch) (fun () -> SaveNewGift |> dispatch)
         | Expenses -> expensesView state dispatch
         | _ -> DockPanel.create []
-
 
     let view (state: State) dispatch =
         DockPanel.create [

@@ -7,6 +7,7 @@
   <ItemGroup>
     <Compile Include="Types.fs" />
     <Compile Include="Funktionen.fs" />
+    <Compile Include="NewGiftView.fs"/>
     <Compile Include="View.fs"/>
     <Compile Include="Program.fs" />
     <AvaloniaResource Include="**\*.xaml" />

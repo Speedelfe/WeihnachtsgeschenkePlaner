@@ -18,6 +18,11 @@ module FileManagement =
     let saveGiftList = saveAGiftList filePath
 
 module GiftManagement =
+    let (|Float|_|) (str: string) =
+        match System.Double.TryParse(str) with
+        | (true,number) -> Some(number)
+        | _ -> None
+
     let newGift (maybePlannedGift:MaybePlannedGift) =
         let checkTuple = (
             maybePlannedGift.person.name,
