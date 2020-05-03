@@ -9,8 +9,9 @@ open Avalonia.FuncUI.DSL
 open Avalonia.FuncUI.Elmish
 open System
 
-open WeihnachtsgeschenkePlaner.Geschenk
+open WeihnachtsgeschenkePlaner.Types
 open WeihnachtsgeschenkePlaner.GiftManagement
+open WeihnachtsgeschenkePlaner.FileManagement
 
 module View =
     type Modus =
@@ -23,7 +24,7 @@ module View =
     type State = {
         planer: PlannedGift list
         modus: Modus
-        newGeschenkEmpfaenger: MaybePlannedGift
+        newPlannedGift: MaybePlannedGift
     }
 
     type Msg =
@@ -33,7 +34,9 @@ module View =
         | SetMaybeGiftDescription of string option
         | SetMaybeGiftCosts of float option
         | SetMaybePurchaseStatusWhoBuys of string option
-        | SetMaybePurchaseStatusAlreadyBought of bool option
+        | SetMaybePurchaseStatusAlreadyBought of bool
+        | SaveNewGift
+        | ResetNewGift
 
     let (|Float|_|) (str: string) =
         match System.Double.TryParse(str) with
@@ -43,7 +46,7 @@ module View =
     let init () =
         { planer = []
           modus = NewPresent
-          newGeschenkEmpfaenger = createEmptyMaybeGeschenkEmpfänger () }
+          newPlannedGift = createEmptyMaybePlannedGift () }
 
     let update (msg: Msg) state =
         match msg with
@@ -51,29 +54,40 @@ module View =
             { state with modus = newMode }
         | SetMaybePersonName name ->
             // TODO: Lenses
-            let person = { state.newGeschenkEmpfaenger.person with name = name }
-            let geschenkEmpfänger = { state.newGeschenkEmpfaenger with person = person }
-            { state with newGeschenkEmpfaenger = geschenkEmpfänger}
+            let person = { state.newPlannedGift.person with name = name }
+            let geschenkEmpfänger = { state.newPlannedGift with person = person }
+            { state with newPlannedGift = geschenkEmpfänger}
         | SetMaybePersonPlannedExpenses expense ->
-            let person = {state.newGeschenkEmpfaenger.person with plannedExpenses = expense}
-            let geschenkEmpfänger = { state.newGeschenkEmpfaenger with person = person}
-            {state with newGeschenkEmpfaenger = geschenkEmpfänger}
+            let person = {state.newPlannedGift.person with plannedExpenses = expense}
+            let geschenkEmpfänger = { state.newPlannedGift with person = person}
+            {state with newPlannedGift = geschenkEmpfänger}
         | SetMaybeGiftDescription description ->
-            let gift = {state.newGeschenkEmpfaenger.gift with description = description}
-            let geschenkEmpfänger = { state.newGeschenkEmpfaenger with gift = gift}
-            { state with newGeschenkEmpfaenger = geschenkEmpfänger}
+            let gift = {state.newPlannedGift.gift with description = description}
+            let geschenkEmpfänger = { state.newPlannedGift with gift = gift}
+            { state with newPlannedGift = geschenkEmpfänger}
         | SetMaybeGiftCosts costs ->
-            let gift = { state.newGeschenkEmpfaenger.gift with totalCosts = costs}
-            let geschenkEmpfänger = { state.newGeschenkEmpfaenger with gift = gift}
-            {state with newGeschenkEmpfaenger = geschenkEmpfänger}
+            let gift = { state.newPlannedGift.gift with totalCosts = costs}
+            let geschenkEmpfänger = { state.newPlannedGift with gift = gift}
+            {state with newPlannedGift = geschenkEmpfänger}
         | SetMaybePurchaseStatusWhoBuys whoBuys ->
-            let purchaseStatus = { state.newGeschenkEmpfaenger.purchaseStatus with whoBuys = whoBuys}
-            let geschenkEmpfänger = { state.newGeschenkEmpfaenger with purchaseStatus = purchaseStatus}
-            {state with newGeschenkEmpfaenger = geschenkEmpfänger}
+            let purchaseStatus = { state.newPlannedGift.purchaseStatus with whoBuys = whoBuys}
+            let geschenkEmpfänger = { state.newPlannedGift with purchaseStatus = purchaseStatus}
+            {state with newPlannedGift = geschenkEmpfänger}
         | SetMaybePurchaseStatusAlreadyBought alreadyBought ->
-            let purchaseStatus = { state.newGeschenkEmpfaenger.purchaseStatus with alreadyBought = alreadyBought}
-            let geschenkEmpfänger = { state.newGeschenkEmpfaenger with purchaseStatus = purchaseStatus}
-            {state with newGeschenkEmpfaenger = geschenkEmpfänger}
+            let purchaseStatus = { state.newPlannedGift.purchaseStatus with alreadyBought = alreadyBought}
+            let geschenkEmpfänger = { state.newPlannedGift with purchaseStatus = purchaseStatus}
+            {state with newPlannedGift = geschenkEmpfänger}
+        | ResetNewGift ->
+            {state with newPlannedGift = createEmptyMaybePlannedGift()}
+        | SaveNewGift ->
+            match newGift state.newPlannedGift with
+            | Some plannedGift ->
+                saveGiftList [plannedGift]
+                {state with newPlannedGift = createEmptyMaybePlannedGift()}
+            | _ ->
+                printfn "Gift konnte nicht gespeichert werden\n%A" state.newPlannedGift
+                state
+
 
     let menu (state: State) dispatch =
         StackPanel.create [
@@ -150,9 +164,11 @@ module View =
                     StackPanel.children [
                         Button.create [
                             Button.content "Speichern"
+                            Button.onClick (fun _ -> SaveNewGift |> dispatch)
                         ]
                         Button.create [
                             Button.content "Zurücksetzen"
+                            Button.onClick (fun _ -> ResetNewGift |> dispatch)
                         ]
                     ]
                 ]
@@ -169,19 +185,19 @@ module View =
                             StackPanel.name "Present Info"
                             StackPanel.children [
                                 TextBox.create [
-                                    TextBox.text (match state.newGeschenkEmpfaenger.person.name with | None -> "" | Some name -> name)
+                                    TextBox.text (match state.newPlannedGift.person.name with | None -> "" | Some name -> name)
                                     TextBox.watermark "Für wen soll das Geschenk sein?*"
                                     TextBox.width 400.0
                                     TextBox.onTextChanged (fun newName -> SetMaybePersonName (if newName = "" then None else Some newName) |> dispatch)
                                 ]
                                 TextBox.create [
-                                    TextBox.text (match state.newGeschenkEmpfaenger.gift.description with | None -> "" | Some name -> name)
+                                    TextBox.text (match state.newPlannedGift.gift.description with | None -> "" | Some name -> name)
                                     TextBox.watermark "Was möchtest du verschenken?*"
                                     TextBox.width 400.0
                                     TextBox.onTextChanged (fun newGiftDescription -> SetMaybeGiftDescription (if newGiftDescription = "" then None else Some newGiftDescription) |> dispatch)
                                 ]
                                 TextBox.create [
-                                    TextBox.text (match state.newGeschenkEmpfaenger.gift.totalCosts with | None -> "" | Some costs -> (string costs))
+                                    TextBox.text (match state.newPlannedGift.gift.totalCosts with | None -> "" | Some costs -> (string costs))
                                     TextBox.watermark "Was kostet es?*"
                                     TextBox.width 400.0
                                     TextBox.onTextChanged (
@@ -200,7 +216,7 @@ module View =
                             StackPanel.name "Max Ausgabe"
                             StackPanel.children [
                                 TextBox.create [
-                                    TextBox.text (match state.newGeschenkEmpfaenger.person.plannedExpenses with | None -> "" | Some expense -> (string expense))
+                                    TextBox.text (match state.newPlannedGift.person.plannedExpenses with | None -> "" | Some expense -> (string expense))
                                     TextBox.watermark "Was soll höchstens für die Person ausgegeben werden?"
                                     TextBox.width 400.0
                                     TextBox.onTextChanged (
@@ -227,7 +243,7 @@ module View =
                                 CheckBox.create [
                                     CheckBox.content "Wurde das Geschenk schon besorgt?"
                                     CheckBox.padding 25.0
-                                    // CheckBox.onClick (fun newAlreadyBought -> SetMaybePurchaseStatusAlreadyBought (if (not newAlreadyBought) then None else Some true) |> dispatch)
+                                    CheckBox.onIsPressedChanged (SetMaybePurchaseStatusAlreadyBought >> dispatch)
                                 ]
                             ]
                         ]

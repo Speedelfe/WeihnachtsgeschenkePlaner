@@ -1,9 +1,9 @@
 namespace WeihnachtsgeschenkePlaner
 
-module Geschenk =
+module Types =
     type Person = {
         name: string
-        plannedExpenses: float
+        plannedExpenses: float option
     }
 
     let createPerson name expense =
@@ -39,12 +39,18 @@ module Geschenk =
         alreadyBought: bool
     }
 
+    let createPurchaseStatus whoBuys alreadyBought =
+        {
+            whoBuys = whoBuys
+            alreadyBought = alreadyBought
+        }
+
 
     type PlannedGift = {
         person: Person
         gift: Gift
         splitList: Split List
-        purchaseStatus: PurchaseStatus
+        purchaseStatus: PurchaseStatus option
     }
 
     let createPlannedGift person gift splitList purchaseStatus =
@@ -73,7 +79,7 @@ module Geschenk =
 
     type MaybePurchaseStatus = {
         whoBuys: string option
-        alreadyBought: bool option
+        alreadyBought: bool
     }
 
     type MaybePlannedGift = {

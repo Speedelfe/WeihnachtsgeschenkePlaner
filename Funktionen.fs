@@ -4,7 +4,7 @@ namespace WeihnachtsgeschenkePlaner
 open FSharp.Json
 open System.IO
 
-open WeihnachtsgeschenkePlaner.Geschenk
+open WeihnachtsgeschenkePlaner.Types
 
 module FileManagement =
     let private filePath = "gift.json"
@@ -18,10 +18,44 @@ module FileManagement =
     let saveGiftList = saveAGiftList filePath
 
 module GiftManagement =
-    let newGift () =
-        ()
+    let newGift (maybePlannedGift:MaybePlannedGift) =
+        let checkTuple = (
+            maybePlannedGift.person.name,
+            maybePlannedGift.gift.description,
+            maybePlannedGift.gift.totalCosts
+        )
+        match checkTuple with
+        | Some name, Some description, Some totalCosts ->
+            let person = createPerson name maybePlannedGift.person.plannedExpenses
+            let gift = createGift description totalCosts
+            let splitList =
+                maybePlannedGift.split
+                |> List.fold (fun splitList maybeSplit ->
+                    let checkTuple = (
+                        maybeSplit.involvedPerson,
+                        maybeSplit.splitAmount
+                    )
+                    match checkTuple with
+                    | Some involvedPerson, Some splitAmount ->
+                        splitList
+                        |> List.append [createSplit involvedPerson splitAmount]
+                    | _ ->
+                        splitList
+                ) []
+            let purchaseStatus =
+                match maybePlannedGift.purchaseStatus.whoBuys with
+                | Some whoBuys ->
+                    createPurchaseStatus whoBuys maybePlannedGift.purchaseStatus.alreadyBought
+                    |> Some
+                | _ ->
+                    None
 
-    let createEmptyMaybeGeschenkEmpfänger () = {
+            createPlannedGift person gift splitList purchaseStatus
+            |> Some
+        | _ ->
+            None
+
+    let createEmptyMaybePlannedGift () = {
         person = {
             name = None
             plannedExpenses = None
@@ -33,6 +67,6 @@ module GiftManagement =
         split = []
         purchaseStatus = {
             whoBuys = None
-            alreadyBought = None
+            alreadyBought = false
         }
     }
