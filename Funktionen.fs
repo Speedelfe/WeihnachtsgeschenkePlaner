@@ -9,7 +9,7 @@ open WeihnachtsgeschenkePlaner.Geschenk
 module FileManagement =
     let private filePath = "gift.json"
 
-    let saveAGiftList filePathP (giftList: PlanningGift list) =
+    let saveAGiftList filePathP (giftList: PlannedGift list) =
         let json =
             giftList
             |> Json.serialize
@@ -24,11 +24,15 @@ module GiftManagement =
     let createEmptyMaybeGeschenkEmpfänger () = {
         person = {
             name = None
-            geplanteAusgabe = None
+            plannedExpenses = None
         }
-        geschenk = {
-            name = None
-            kosten = None
+        gift = {
+            description = None
+            totalCosts = None
         }
-        betrag = []
+        split = []
+        purchaseStatus = {
+            whoBuys = None
+            alreadyBought = None
+        }
     }

@@ -34,37 +34,51 @@ module Geschenk =
             splitAmount = amount
         }
 
-    type PlanningGift = {
+    type PurchaseStatus = {
+        whoBuys: string
+        alreadyBought: bool
+    }
+
+
+    type PlannedGift = {
         person: Person
         gift: Gift
         splitList: Split List
+        purchaseStatus: PurchaseStatus
     }
 
-    let createPlannedGift person gift splitList =
+    let createPlannedGift person gift splitList purchaseStatus =
         {
             person = person
             gift = gift
             splitList = splitList
+            purchaseStatus = purchaseStatus
         }
 
 
     type MaybePerson = {
         name: string option
-        geplanteAusgabe: float option
+        plannedExpenses: float option
     }
 
-    type MaybeGeschenk = {
-        name: string option
-        kosten: float option
+    type MaybeGift = {
+        description: string option
+        totalCosts: float option
     }
 
-    type MaybeAnteil = {
-        beteiligtePerson: MaybePerson
-        anteilPerson: float option
+    type MaybeSplit = {
+        involvedPerson: string option
+        splitAmount: float option
     }
 
-    type MaybeGeschenkEmpfänger = {
+    type MaybePurchaseStatus = {
+        whoBuys: string option
+        alreadyBought: bool option
+    }
+
+    type MaybePlannedGift = {
         person: MaybePerson
-        geschenk: MaybeGeschenk
-        betrag: MaybeAnteil list
+        gift: MaybeGift
+        split: MaybeSplit list
+        purchaseStatus: MaybePurchaseStatus
     }
