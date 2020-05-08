@@ -66,8 +66,6 @@ module NewGiftView =
         StackPanel.create [
             StackPanel.orientation Orientation.Vertical
             StackPanel.margin 25.0
-            StackPanel.column 0
-            StackPanel.row 0
             StackPanel.spacing 15.0
             StackPanel.name "Present Info"
             StackPanel.children [
@@ -100,8 +98,6 @@ module NewGiftView =
         StackPanel.create [
             StackPanel.orientation Orientation.Vertical
             StackPanel.margin 25.0
-            StackPanel.column 1
-            StackPanel.row 0
             StackPanel.name "Max Ausgabe"
             StackPanel.children [
                 TextBox.create [
@@ -121,8 +117,6 @@ module NewGiftView =
         StackPanel.create [
             StackPanel.orientation Orientation.Vertical
             StackPanel.margin 25.0
-            StackPanel.column 0
-            StackPanel.row 1
             StackPanel.spacing 15.0
             StackPanel.name "Orderd?"
             StackPanel.children [
@@ -143,8 +137,6 @@ module NewGiftView =
         StackPanel.create [
             StackPanel.orientation Orientation.Vertical
             StackPanel.margin 25.0
-            StackPanel.column 1
-            StackPanel.row 1
             StackPanel.spacing 15.0
             StackPanel.name "Anteil Info"
             StackPanel.children [
@@ -182,10 +174,34 @@ module NewGiftView =
                     Grid.columnDefinitions "1*, 1*"
                     Grid.rowDefinitions "1*, 1*"
                     Grid.children [
-                        quadrant1View state dispatch
-                        quadrant2View state dispatch
-                        quadrant3View state dispatch
-                        quadrant4View state dispatch
+                        Border.create [
+                            Border.borderBrush "black"
+                            Border.borderThickness (0.0,0.0,1.0,1.0)
+                            Border.column 0
+                            Border.row 0
+                            Border.child (quadrant1View state dispatch)
+                        ]
+                        Border.create [
+                            Border.borderBrush "black"
+                            Border.borderThickness (1.0,0.0,0.0,1.0)
+                            Border.column 1
+                            Border.row 0
+                            Border.child (quadrant2View state dispatch)
+                        ]
+                        Border.create [
+                            Border.borderBrush "black"
+                            Border.borderThickness (0.0,1.0,1.0,0.0)
+                            Border.column 0
+                            Border.row 1
+                            Border.child (quadrant3View state dispatch)
+                        ]
+                        Border.create [
+                            Border.borderBrush "black"
+                            Border.borderThickness (1.0,1.0,0.0,0.0)
+                            Border.column 1
+                            Border.row 1
+                            Border.child (quadrant4View state dispatch)
+                        ]
                     ]
                 ]
             ]
