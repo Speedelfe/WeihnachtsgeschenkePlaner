@@ -25,6 +25,7 @@ module View =
         planer: PlannedGift list
         modus: Modus
         newGiftState: NewGiftView.State
+        easyViewState: EasyViewView.State
     }
 
     type Msg =
@@ -36,6 +37,7 @@ module View =
         { planer = FileManagement.loadGiftList ()
           modus = NewPresent
           newGiftState = NewGiftView.init ()
+          easyViewState = EasyViewView.init()
         }
 
     let update (msg: Msg) state =
@@ -97,15 +99,6 @@ module View =
             ]
         ]
 
-    let easyView (state: State) dispatch =
-        DockPanel.create [
-            DockPanel.margin 5.0
-            DockPanel.children [
-                TextBlock.create [
-                    TextBlock.text "Einfache Planungs Ansicht"
-                ]
-            ]
-        ]
 
     let notEasyView (state: State) dispatch =
         DockPanel.create [
@@ -129,7 +122,7 @@ module View =
 
     let modeView (state: State) dispatch =
         match state.modus with
-        | EasyView -> easyView state dispatch
+        | EasyView -> EasyViewView.easyView state.easyViewState dispatch
         | NotEasyView -> notEasyView state dispatch
         | NewPresent -> NewGiftView.view state.newGiftState (NewGiftMsg >> dispatch) (fun () -> SaveNewGift |> dispatch)
         | Expenses -> expensesView state dispatch
