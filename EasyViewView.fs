@@ -19,7 +19,7 @@ open WeihnachtsgeschenkePlaner.FileManagement
 
 module EasyViewView =
     type State = {
-        planer: PlannedGift list
+        nix: bool
     }
 
     type Msg =
@@ -27,7 +27,7 @@ module EasyViewView =
 
     let init () =
         {
-            planer = FileManagement.loadGiftList ()
+            nix = false
         }
 
     let update (msg: Msg) state =
@@ -49,7 +49,10 @@ module EasyViewView =
             TextBlock.create [
                 TextBlock.column 1
                 TextBlock.row index
-                TextBlock.text (plannedGift.person.plannedExpenses |> string)
+                let euroSymbol = "€"
+                match plannedGift.person.plannedExpenses with
+                | Some expenses -> TextBlock.text ((expenses |> string) + " " + euroSymbol)
+                | None -> TextBlock.text ""
             ]
             TextBlock.create [
                 TextBlock.column 2
@@ -59,7 +62,8 @@ module EasyViewView =
             TextBlock.create [
                 TextBlock.column 3
                 TextBlock.row index
-                TextBlock.text (plannedGift.gift.totalCost |> string)
+                let euroSymbol = "€"
+                TextBlock.text ((plannedGift.gift.totalCost |> string) + " " + euroSymbol)
             ]
             CheckBox.create [
                 CheckBox.column 4
@@ -77,7 +81,7 @@ module EasyViewView =
             ]
         ]
 
-    let easyView (state: State) dispatch =
+    let easyView (state: State) (giftList: PlannedGift list) dispatch =
         DockPanel.create [
             DockPanel.margin 5.0
             DockPanel.children [
@@ -89,11 +93,11 @@ module EasyViewView =
                     Grid.dock Dock.Left
                     Grid.columnDefinitions "1*, 1*, 1*, 1*, 1*, 1*"
                     Grid.rowDefinitions (
-                        state.planer
+                        giftList
                         |> List.map (fun _ -> "Auto")
                         |> List.reduce (fun a b -> a + "," + b))
                     Grid.children (
-                        state.planer
+                        giftList
                         |> List.indexed
                         |> List.collect giftEmpfaengerView)
                 ]

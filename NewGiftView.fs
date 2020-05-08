@@ -128,7 +128,8 @@ module NewGiftView =
                 CheckBox.create [
                     CheckBox.content "Wurde das Geschenk schon besorgt?"
                     CheckBox.padding 25.0
-                    CheckBox.onIsPressedChanged (SetMaybePurchaseStatusAlreadyBought >> dispatch)
+                    CheckBox.onChecked (fun _ -> SetMaybePurchaseStatusAlreadyBought true |> dispatch)
+                    CheckBox.onUnchecked (fun _ -> SetMaybePurchaseStatusAlreadyBought false |> dispatch)
                 ]
             ]
         ]

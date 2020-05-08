@@ -34,7 +34,8 @@ module View =
         | SaveNewGift
 
     let init () =
-        { planer = FileManagement.loadGiftList ()
+        {
+          planer = FileManagement.loadGiftList ()
           modus = EasyView
           newGiftState = NewGiftView.init ()
           easyViewState = EasyViewView.init()
@@ -122,7 +123,7 @@ module View =
 
     let modeView (state: State) dispatch =
         match state.modus with
-        | EasyView -> EasyViewView.easyView state.easyViewState dispatch
+        | EasyView -> EasyViewView.easyView state.easyViewState state.planer dispatch
         | NotEasyView -> notEasyView state dispatch
         | NewPresent -> NewGiftView.view state.newGiftState (NewGiftMsg >> dispatch) (fun () -> SaveNewGift |> dispatch)
         | Expenses -> expensesView state dispatch
