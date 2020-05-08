@@ -33,7 +33,7 @@ module View =
         | SaveNewGift
 
     let init () =
-        { planer = []
+        { planer = FileManagement.loadGiftList ()
           modus = NewPresent
           newGiftState = NewGiftView.init ()
         }

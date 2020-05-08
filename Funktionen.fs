@@ -17,6 +17,16 @@ module FileManagement =
 
     let saveGiftList = saveAGiftList filePath
 
+    let loadAGiftList filePath () =
+        match File.Exists filePath with
+        | false -> []
+        | true ->
+          File.ReadAllText filePath
+        |> Json.deserialize<PlannedGift list>
+
+    let loadGiftList = loadAGiftList filePath
+
+
 module GiftManagement =
     let (|Float|_|) (str: string) =
         match System.Double.TryParse(str) with
