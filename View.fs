@@ -35,7 +35,7 @@ module View =
 
     let init () =
         { planer = FileManagement.loadGiftList ()
-          modus = NewPresent
+          modus = EasyView
           newGiftState = NewGiftView.init ()
           easyViewState = EasyViewView.init()
         }
