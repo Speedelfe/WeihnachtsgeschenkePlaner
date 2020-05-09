@@ -43,6 +43,7 @@ module GiftManagement =
         | Some name, Some description, Some totalCosts ->
             let person = createPerson name maybePlannedGift.person.plannedExpenses
             let gift = createGift description totalCosts
+            let isSplit = maybePlannedGift.isGiftSplitted
             let splitList =
                 maybePlannedGift.split
                 |> List.fold (fun splitList maybeSplit ->
@@ -65,7 +66,7 @@ module GiftManagement =
                 | _ ->
                     None
 
-            createPlannedGift person gift splitList purchaseStatus
+            createPlannedGift person gift isSplit splitList purchaseStatus
             |> Some
         | _ ->
             None
@@ -79,6 +80,7 @@ module GiftManagement =
             description = None
             totalCosts = None
         }
+        isGiftSplitted = false
         split = []
         purchaseStatus = {
             whoBuys = None

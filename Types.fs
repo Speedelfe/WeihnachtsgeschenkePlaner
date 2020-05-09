@@ -49,14 +49,16 @@ module Types =
     type PlannedGift = {
         person: Person
         gift: Gift
+        isGiftSplitted: bool
         splitList: Split List
         purchaseStatus: PurchaseStatus option
     }
 
-    let createPlannedGift person gift splitList purchaseStatus =
+    let createPlannedGift person gift isSplit splitList purchaseStatus =
         {
             person = person
             gift = gift
+            isGiftSplitted = isSplit
             splitList = splitList
             purchaseStatus = purchaseStatus
         }
@@ -85,6 +87,7 @@ module Types =
     type MaybePlannedGift = {
         person: MaybePerson
         gift: MaybeGift
+        isGiftSplitted: bool
         split: MaybeSplit list
         purchaseStatus: MaybePurchaseStatus
     }
