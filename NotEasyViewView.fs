@@ -121,6 +121,15 @@ module NotEasyViewView =
             TextBlock.create [
                 TextBlock.column 6
                 TextBlock.row (index + 1)
+                let euroSymbol = "€"
+                match plannedGift.isGiftSplitted with
+                | false -> TextBlock.text ((plannedGift.gift.totalCost |> string) + " " + euroSymbol)
+                | true ->
+                    plannedGift.splitList
+                    |> List.sumBy (fun split -> split.splitAmount)
+                    |> (fun sumOtherAmounts -> plannedGift.gift.totalCost - sumOtherAmounts |> string)
+                    |> (fun selfAmount -> selfAmount + " " + euroSymbol)
+                    |> TextBlock.text
             ]
         ]
 
