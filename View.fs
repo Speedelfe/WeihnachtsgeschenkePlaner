@@ -124,7 +124,7 @@ module View =
     let modeView (state: State) dispatch =
         match state.modus with
         | EasyView -> EasyViewView.easyView state.easyViewState state.planer dispatch
-        | NotEasyView -> notEasyView state dispatch
+        | NotEasyView -> NotEasyViewView.notEasyView state.planer dispatch
         | NewPresent -> NewGiftView.view state.newGiftState (NewGiftMsg >> dispatch) (fun () -> SaveNewGift |> dispatch)
         | Expenses -> expensesView state dispatch
         | _ -> DockPanel.create []
