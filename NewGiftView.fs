@@ -16,33 +16,36 @@ open WeihnachtsgeschenkePlaner.FileManagement
 module NewGiftView =
     type State = {
         newPlannedGift: MaybePlannedGift
+        person: MaybePerson
     }
 
     type Msg =
-        | SetMaybePersonName of string option
+        | SetMaybePersonName of PersonName option
         | SetMaybePersonPlannedExpenses of float option
         | SetMaybeGiftDescription of string option
         | SetMaybeGiftCosts of float option
-        | SetMaybePurchaseStatusWhoBuys of string option
+        | SetMaybePurchaseStatusWhoBuys of PersonName option
         | SetMaybePurchaseStatusAlreadyBought of bool
         | ResetNewGift
 
     let init () =
         {
             newPlannedGift = createEmptyMaybePlannedGift ()
+            person = { name = None; plannedExpenses = None }
         }
 
     let update (msg: Msg) state =
         match msg with
         | SetMaybePersonName name ->
             // TODO: Lenses
-            let person = { state.newPlannedGift.person with name = name }
-            let geschenkEmpfänger = { state.newPlannedGift with person = person }
-            { state with newPlannedGift = geschenkEmpfänger}
+            let geschenkEmpfänger = { state.newPlannedGift with receiver = name }
+            let person = { state.person with name = name }
+            { state with
+                newPlannedGift = geschenkEmpfänger
+                person = person }
         | SetMaybePersonPlannedExpenses expense ->
-            let person = {state.newPlannedGift.person with plannedExpenses = expense}
-            let geschenkEmpfänger = { state.newPlannedGift with person = person}
-            {state with newPlannedGift = geschenkEmpfänger}
+            let person = {state.person with plannedExpenses = expense}
+            { state with person = person}
         | SetMaybeGiftDescription description ->
             let gift = {state.newPlannedGift.gift with description = description}
             let geschenkEmpfänger = { state.newPlannedGift with gift = gift}
@@ -70,10 +73,10 @@ module NewGiftView =
             StackPanel.name "Present Info"
             StackPanel.children [
                 TextBox.create [
-                    TextBox.text (match state.newPlannedGift.person.name with | None -> "" | Some name -> name)
+                    TextBox.text (match state.newPlannedGift.receiver with | Some (PersonName name) -> name | None -> "")
                     TextBox.watermark "Für wen soll das Geschenk sein?*"
                     TextBox.width 400.0
-                    TextBox.onTextChanged (fun newName -> SetMaybePersonName (if newName = "" then None else Some newName) |> dispatch)
+                    TextBox.onTextChanged (fun newName -> SetMaybePersonName (if newName = "" then None else newName |> PersonName |> Some) |> dispatch)
                 ]
                 TextBox.create [
                     TextBox.text (match state.newPlannedGift.gift.description with | None -> "" | Some name -> name)
@@ -94,14 +97,23 @@ module NewGiftView =
             ]
         ]
 
-    let quadrant2View state dispatch =
+    let quadrant2View personList state dispatch =
         StackPanel.create [
             StackPanel.orientation Orientation.Vertical
             StackPanel.margin 25.0
             StackPanel.name "Max Ausgabe"
             StackPanel.children [
                 TextBox.create [
-                    TextBox.text (match state.newPlannedGift.person.plannedExpenses with | None -> "" | Some expense -> (string expense))
+                    TextBox.text (
+                        personList
+                        |> List.tryFind (fun person -> Some person.name = state.newPlannedGift.receiver)
+                        |> function
+                            | Some { plannedExpenses = Some expenses } -> expenses |> string
+                            | Some { plannedExpenses = None }
+                            | None ->
+                                match state.person.plannedExpenses with
+                                | Some expense -> (string expense)
+                                | None -> "")
                     TextBox.watermark "Was soll höchstens für die Person ausgegeben werden?"
                     TextBox.width 400.0
                     TextBox.onTextChanged (
@@ -123,7 +135,7 @@ module NewGiftView =
                 TextBox.create [
                     TextBox.watermark "Wer besorgt das Geschenk?"
                     TextBox.width 400.0
-                    TextBox.onTextChanged (fun newWhoBuys -> SetMaybePurchaseStatusWhoBuys (if newWhoBuys = "" then None else Some newWhoBuys) |> dispatch)
+                    TextBox.onTextChanged (fun newWhoBuys -> SetMaybePurchaseStatusWhoBuys (if newWhoBuys = "" then None else newWhoBuys |> PersonName |> Some) |> dispatch)
                 ]
                 CheckBox.create [
                     CheckBox.content "Wurde das Geschenk schon besorgt?"
@@ -148,7 +160,7 @@ module NewGiftView =
             ]
         ]
 
-    let view (state: State) dispatch saveNewGift =
+    let view (state: State) personList dispatch saveNewGift =
         DockPanel.create [
             DockPanel.margin 5.0
             DockPanel.children [
@@ -187,7 +199,7 @@ module NewGiftView =
                             Border.borderThickness (1.0,0.0,0.0,1.0)
                             Border.column 1
                             Border.row 0
-                            Border.child (quadrant2View state dispatch)
+                            Border.child (quadrant2View personList state dispatch)
                         ]
                         Border.create [
                             Border.borderBrush "black"

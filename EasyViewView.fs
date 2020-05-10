@@ -73,7 +73,7 @@ module EasyViewView =
             TextBlock.create [
                 TextBlock.column 0
                 TextBlock.row (index + 1)
-                TextBlock.text plannedGift.person.name
+                TextBlock.text (getPersonNameValue plannedGift.receiver)
             ]
             TextBlock.create [
                 TextBlock.column 1
@@ -96,9 +96,10 @@ module EasyViewView =
             TextBlock.create [
                 TextBlock.column 4
                 TextBlock.row (index + 1)
-                match plannedGift.purchaseStatus with
-                | Some buyer -> (TextBlock.text buyer.whoBuys)
-                | None -> (TextBlock.text "")
+                TextBlock.text
+                    (match plannedGift.purchaseStatus with
+                    | Some buyer -> getPersonNameValue buyer.whoBuys
+                    | None -> "")
             ]
         ]
 

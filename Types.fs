@@ -1,8 +1,40 @@
 namespace WeihnachtsgeschenkePlaner
 
 module Types =
+    type PersonName = PersonName of string
+
+    let getPersonNameValue (PersonName personName) = personName
+
+    type MaybePerson = {
+        name: PersonName option
+        plannedExpenses: float option
+    }
+
+    type MaybeGift = {
+        description: string option
+        totalCosts: float option
+    }
+
+    type MaybeSplit = {
+        involvedPerson: PersonName option
+        splitAmount: float option
+    }
+
+    type MaybePurchaseStatus = {
+        whoBuys: PersonName option
+        alreadyBought: bool
+    }
+
+    type MaybePlannedGift = {
+        receiver: PersonName option
+        gift: MaybeGift
+        isGiftSplitted: bool
+        split: MaybeSplit list
+        purchaseStatus: MaybePurchaseStatus
+    }
+
     type Person = {
-        name: string
+        name: PersonName
         plannedExpenses: float option
     }
 
@@ -24,7 +56,7 @@ module Types =
         }
 
     type Split = {
-        involvedPerson: string
+        involvedPerson: PersonName
         splitAmount: float
     }
 
@@ -35,7 +67,7 @@ module Types =
         }
 
     type PurchaseStatus = {
-        whoBuys: string
+        whoBuys: PersonName
         alreadyBought: bool
     }
 
@@ -47,47 +79,18 @@ module Types =
 
 
     type PlannedGift = {
-        person: Person
+        receiver: PersonName
         gift: Gift
         isGiftSplitted: bool
         splitList: Split List
         purchaseStatus: PurchaseStatus option
     }
 
-    let createPlannedGift person gift isSplit splitList purchaseStatus =
+    let createPlannedGift receiver gift isSplit splitList purchaseStatus =
         {
-            person = person
+            receiver = receiver
             gift = gift
             isGiftSplitted = isSplit
             splitList = splitList
             purchaseStatus = purchaseStatus
         }
-
-
-    type MaybePerson = {
-        name: string option
-        plannedExpenses: float option
-    }
-
-    type MaybeGift = {
-        description: string option
-        totalCosts: float option
-    }
-
-    type MaybeSplit = {
-        involvedPerson: string option
-        splitAmount: float option
-    }
-
-    type MaybePurchaseStatus = {
-        whoBuys: string option
-        alreadyBought: bool
-    }
-
-    type MaybePlannedGift = {
-        person: MaybePerson
-        gift: MaybeGift
-        isGiftSplitted: bool
-        split: MaybeSplit list
-        purchaseStatus: MaybePurchaseStatus
-    }

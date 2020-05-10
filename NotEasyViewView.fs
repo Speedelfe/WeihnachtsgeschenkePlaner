@@ -76,22 +76,38 @@ module NotEasyViewView =
                 TextBlock.row 0
                 TextBlock.text "eigener Anteil"
             ]
+            TextBlock.create [
+                TextBlock.column 7
+                TextBlock.row 0
+                TextBlock.text "Anteil von"
+            ]
+            TextBlock.create [
+                TextBlock.column 8
+                TextBlock.row 0
+                TextBlock.text "Anteil von"
+            ]
         ]
 
-    let giftEmpfaengerView (index:int, plannedGift:PlannedGift): IView list =
+    let giftEmpfaengerView personList (index:int, plannedGift:PlannedGift): IView list =
         [
             TextBlock.create [
                 TextBlock.column 0
                 TextBlock.row (index + 1)
-                TextBlock.text plannedGift.person.name
+                TextBlock.text (getPersonNameValue plannedGift.receiver)
             ]
             TextBlock.create [
                 TextBlock.column 1
                 TextBlock.row (index + 1)
+
                 let euroSymbol = "€"
-                match plannedGift.person.plannedExpenses with
-                | Some expenses -> TextBlock.text ((expenses |> string) + " " + euroSymbol)
-                | None -> TextBlock.text ""
+
+                personList
+                |> List.tryFind (fun person -> person.name = plannedGift.receiver)
+                |> function
+                    | Some { plannedExpenses = Some expenses } -> (expenses |> string) + " " + euroSymbol
+                    | Some { plannedExpenses = None }
+                    | None -> ""
+                |> TextBlock.text
             ]
             TextBlock.create [
                 TextBlock.column 2
@@ -114,9 +130,10 @@ module NotEasyViewView =
             TextBlock.create [
                 TextBlock.column 5
                 TextBlock.row (index + 1)
+                // TODO: TextBlock.text rausziehen
                 match plannedGift.purchaseStatus with
-                | Some buyer -> (TextBlock.text buyer.whoBuys)
-                | None -> (TextBlock.text "")
+                | Some buyer -> TextBlock.text (getPersonNameValue buyer.whoBuys)
+                | None -> TextBlock.text ""
             ]
             TextBlock.create [
                 TextBlock.column 6
@@ -133,7 +150,7 @@ module NotEasyViewView =
             ]
         ]
 
-    let notEasyView (giftList: PlannedGift list) dispatch =
+    let notEasyView (giftList: PlannedGift list) personList dispatch =
         DockPanel.create [
             DockPanel.margin 5.0
             DockPanel.children [
@@ -155,7 +172,8 @@ module NotEasyViewView =
                         getHeadline()
                         giftList
                         |> List.indexed
-                        |> List.collect giftEmpfaengerView])
+                        |> List.collect (giftEmpfaengerView personList)
+                    ])
                 ]
             ]
         ]

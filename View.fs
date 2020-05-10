@@ -23,6 +23,7 @@ module View =
 
     type State = {
         planer: PlannedGift list
+        persons: Person list
         modus: Modus
         newGiftState: NewGiftView.State
         easyViewState: EasyViewView.State
@@ -34,8 +35,10 @@ module View =
         | SaveNewGift
 
     let init () =
+        let giftList, personList = load ()
         {
-          planer = FileManagement.loadGiftList ()
+          planer = giftList
+          persons = personList
           modus = EasyView
           newGiftState = NewGiftView.init ()
           easyViewState = EasyViewView.init()
@@ -51,11 +54,24 @@ module View =
         | SaveNewGift ->
             match newGift state.newGiftState.newPlannedGift with
             | Some plannedGift ->
-                let newGiftList = state.planer |> List.append [plannedGift]
-                saveGiftList newGiftList
-                {state with
+                let newGiftList = List.append state.planer [plannedGift]
+
+                // Brauchen wir eine neue Person oder gibt es die schon?
+                let personList =
+                    state.persons
+                    |> List.tryFind (fun person -> person.name = plannedGift.receiver)
+                    |> function
+                        | Some person ->
+                            state.persons
+                            |> List.map (fun p -> if p.name = person.name then { p with plannedExpenses = state.newGiftState.person.plannedExpenses } else p)
+                        | None ->
+                            List.append state.persons [ newPerson state.newGiftState.person ]
+
+                save newGiftList personList
+                { state with
+                    persons = personList
                     planer = newGiftList
-                    newGiftState = { newPlannedGift = createEmptyMaybePlannedGift() } }
+                    newGiftState = NewGiftView.init () }
             | _ ->
                 printfn "Gift konnte nicht gespeichert werden\n%A" state.newGiftState.newPlannedGift
                 state
@@ -124,8 +140,8 @@ module View =
     let modeView (state: State) dispatch =
         match state.modus with
         | EasyView -> EasyViewView.easyView state.easyViewState state.planer dispatch
-        | NotEasyView -> NotEasyViewView.notEasyView state.planer dispatch
-        | NewPresent -> NewGiftView.view state.newGiftState (NewGiftMsg >> dispatch) (fun () -> SaveNewGift |> dispatch)
+        | NotEasyView -> NotEasyViewView.notEasyView state.planer state.persons dispatch
+        | NewPresent -> NewGiftView.view state.newGiftState state.persons (NewGiftMsg >> dispatch) (fun () -> SaveNewGift |> dispatch)
         | Expenses -> expensesView state dispatch
         | _ -> DockPanel.create []
 

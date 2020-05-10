@@ -9,22 +9,24 @@ open WeihnachtsgeschenkePlaner.Types
 module FileManagement =
     let private filePath = "gift.json"
 
-    let saveAGiftList filePathP (giftList: PlannedGift list) =
+    type SaveStructure = {
+        giftList: PlannedGift list
+        personList: Person list
+    }
+
+    let save (giftList: PlannedGift list) (personList: Person list) =
         let json =
-            giftList
+            { giftList = giftList; personList = personList }
             |> Json.serialize
-        File.WriteAllText (filePathP, json)
+        File.WriteAllText (filePath, json)
 
-    let saveGiftList = saveAGiftList filePath
-
-    let loadAGiftList filePath () =
+    let load () =
         match File.Exists filePath with
-        | false -> []
+        | false -> ([], [])
         | true ->
-          File.ReadAllText filePath
-        |> Json.deserialize<PlannedGift list>
-
-    let loadGiftList = loadAGiftList filePath
+            File.ReadAllText filePath
+            |> Json.deserialize<SaveStructure>
+            |> fun s -> s.giftList, s.personList
 
 
 module GiftManagement =
@@ -35,13 +37,13 @@ module GiftManagement =
 
     let newGift (maybePlannedGift:MaybePlannedGift) =
         let checkTuple = (
-            maybePlannedGift.person.name,
+            maybePlannedGift.receiver,
             maybePlannedGift.gift.description,
             maybePlannedGift.gift.totalCosts
         )
         match checkTuple with
         | Some name, Some description, Some totalCosts ->
-            let person = createPerson name maybePlannedGift.person.plannedExpenses
+            // TODO: Handle new person
             let gift = createGift description totalCosts
             let isSplit = maybePlannedGift.isGiftSplitted
             let splitList =
@@ -66,16 +68,20 @@ module GiftManagement =
                 | _ ->
                     None
 
-            createPlannedGift person gift isSplit splitList purchaseStatus
+            createPlannedGift name gift isSplit splitList purchaseStatus
             |> Some
         | _ ->
             None
 
+    let newPerson (maybePerson: MaybePerson) =
+        match maybePerson.name with
+        | Some name ->
+            createPerson name maybePerson.plannedExpenses
+        | None ->
+            failwith "Nope"
+
     let createEmptyMaybePlannedGift () = {
-        person = {
-            name = None
-            plannedExpenses = None
-        }
+        receiver = None
         gift = {
             description = None
             totalCosts = None
