@@ -92,3 +92,8 @@ module GiftManagement =
             alreadyBought = false
         }
     }
+
+    let getMostSplittedGift (plannedGift: PlannedGift List) =
+        plannedGift
+        |> List.map (fun gift -> gift.splitList.Length)
+        |> List.max

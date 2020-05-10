@@ -164,12 +164,17 @@ module NotEasyViewView =
                 ]
                 Grid.create [
                     Grid.dock Dock.Left
-                    Grid.columnDefinitions "1*, 1*, 1*, 1*, 1*, 1*, 1*, 1*, 1*, 1*"
-                    Grid.rowDefinitions ("Auto," +
+                    Grid.columnDefinitions ("1*, 1*, 1*, 1*, 1*, 1*, 1*" +
                         (
-                            giftList
-                            |> List.map (fun _ -> "Auto")
-                            |> List.reduce (fun a b -> a + "," + b)
+                            (getMostSplittedGift giftList, ",1*")
+                            ||> String.replicate
+                        )
+                    )
+
+                    Grid.rowDefinitions ("Auto" +
+                        (
+                            (giftList.Length, ",Auto")
+                            ||> String.replicate
                         )
                     )
                     Grid.children (List.concat [
