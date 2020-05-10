@@ -43,7 +43,6 @@ module GiftManagement =
         )
         match checkTuple with
         | Some name, Some description, Some totalCosts ->
-            // TODO: Handle new person
             let gift = createGift description totalCosts
             let isSplit = maybePlannedGift.isGiftSplitted
             let splitList =

@@ -123,17 +123,21 @@ module NotEasyViewView =
             CheckBox.create [
                 CheckBox.column 4
                 CheckBox.row (index + 1)
-                match plannedGift.purchaseStatus with
-                | Some state -> CheckBox.isChecked state.alreadyBought
-                | None -> CheckBox.isChecked false
+                CheckBox.isEnabled false
+                CheckBox.isChecked (
+                    match plannedGift.purchaseStatus with
+                    | Some state -> state.alreadyBought
+                    | None -> false
+                )
+
             ]
             TextBlock.create [
                 TextBlock.column 5
                 TextBlock.row (index + 1)
-                // TODO: TextBlock.text rausziehen
-                match plannedGift.purchaseStatus with
-                | Some buyer -> TextBlock.text (getPersonNameValue buyer.whoBuys)
-                | None -> TextBlock.text ""
+                TextBlock.text (
+                    match plannedGift.purchaseStatus with
+                    | Some buyer -> (getPersonNameValue buyer.whoBuys)
+                    | None ->  "")
             ]
             TextBlock.create [
                 TextBlock.column 6

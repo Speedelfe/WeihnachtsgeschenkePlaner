@@ -89,9 +89,12 @@ module EasyViewView =
             CheckBox.create [
                 CheckBox.column 3
                 CheckBox.row (index + 1)
-                match plannedGift.purchaseStatus with
-                | Some state -> CheckBox.isChecked state.alreadyBought
-                | None -> CheckBox.isChecked false
+                CheckBox.isEnabled false
+                CheckBox.isChecked (
+                    match plannedGift.purchaseStatus with
+                    | Some state ->  state.alreadyBought
+                    | None -> false
+                )
             ]
             TextBlock.create [
                 TextBlock.column 4
