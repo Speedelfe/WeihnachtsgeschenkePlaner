@@ -69,17 +69,50 @@ module ExpensesView =
                 | Some expenses -> expenses
                 | None -> 0.0)
 
-    let getTotalRealExpenses  (giftList: PlannedGift list) =
+    let getTotalRealExpenses  giftList =
         giftList
         |> List.sumBy (fun gift -> gift.gift.totalCost)
 
-    let getTotalValues personList (giftList: PlannedGift list): IView list =
+    let getPersonExpensePerPerson (personName: PersonName) (giftList: PlannedGift List) =
+        giftList
+        |> List.filter (fun gift -> gift.receiver = personName )
+        |> List.sumBy (fun gift -> gift.gift.totalCost)
+
+    let getExpensesPerPersonList index person (giftList: PlannedGift List): IView list =
+        [
+            TextBlock.create [
+                TextBlock.column 0
+                TextBlock.row (index + 1)
+                TextBlock.text (getPersonNameValue person.name)
+            ]
+            TextBlock.create [
+                TextBlock.column 1
+                TextBlock.row (index + 1)
+                TextBlock.text (match person.plannedExpenses with
+                    |Some expense -> expense |> string
+                    |None -> 0.0 |> string)
+            ]
+            TextBlock.create [
+                TextBlock.column 2
+                TextBlock.row (index + 1)
+                TextBlock.text (getPersonExpensePerPerson person.name giftList |> string)
+            ]
+            TextBlock.create [
+                TextBlock.column 3
+                TextBlock.row (index + 1)
+                TextBlock.text (
+                    match person.plannedExpenses with
+                    |Some expenses-> expenses - getPersonExpensePerPerson person.name giftList|> string
+                    |None -> - getPersonExpensePerPerson person.name giftList|> string)
+            ]
+        ]
+
+    let getTotalValues personList giftList: IView list =
         [
             TextBlock.create [
                 TextBlock.column 0
                 TextBlock.row 1
-                TextBlock.text (getTotalPlannedExpenses personList |> string
-                )
+                TextBlock.text (getTotalPlannedExpenses personList |> string)
             ]
             TextBlock.create [
                 TextBlock.column 1
@@ -100,7 +133,7 @@ module ExpensesView =
                     StackPanel.orientation Orientation.Vertical
                     StackPanel.margin 25.0
                     StackPanel.dock Dock.Top
-                    StackPanel.spacing 15.0
+                    StackPanel.spacing 45.0
                     StackPanel.name "Expenses Info"
                     StackPanel.children [
                         TextBlock.create [
@@ -117,6 +150,9 @@ module ExpensesView =
                             )
                             Grid.children (List.concat [
                                 headlineGifts()
+                                personList
+                                |> List.indexed
+                                |> List.collect (fun (index, person) -> getExpensesPerPersonList index person giftList)
                             ])
                         ]
                         Grid.create [

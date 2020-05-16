@@ -7,6 +7,7 @@ open Avalonia.Layout
 open Avalonia.FuncUI
 open Avalonia.FuncUI.DSL
 open Avalonia.FuncUI.Elmish
+open Avalonia.FuncUI.Types
 open System
 
 open WeihnachtsgeschenkePlaner.Types
