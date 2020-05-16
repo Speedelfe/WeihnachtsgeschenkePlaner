@@ -42,6 +42,7 @@ module ExpensesView =
                 TextBlock.text "Differenz"
             ]
         ]
+
     let headlineTotalExpenses () : IView list =
         [
             TextBlock.create [
@@ -61,12 +62,44 @@ module ExpensesView =
             ]
         ]
 
-    let expensesView (giftList: PlannedGift list) personList dispatch =
+    let getTotalPlannedExpenses personList =
+            personList
+            |> List.sumBy (fun person ->
+                match person.plannedExpenses with
+                | Some expenses -> expenses
+                | None -> 0.0)
+
+    let getTotalRealExpenses  (giftList: PlannedGift list) =
+        giftList
+        |> List.sumBy (fun gift -> gift.gift.totalCost)
+
+    let getTotalValues personList (giftList: PlannedGift list): IView list =
+        [
+            TextBlock.create [
+                TextBlock.column 0
+                TextBlock.row 1
+                TextBlock.text (getTotalPlannedExpenses personList |> string
+                )
+            ]
+            TextBlock.create [
+                TextBlock.column 1
+                TextBlock.row 1
+                TextBlock.text (getTotalRealExpenses giftList |> string)
+            ]
+            TextBlock.create [
+                TextBlock.column 2
+                TextBlock.row 1
+                TextBlock.text (getTotalPlannedExpenses personList - getTotalRealExpenses giftList|> string)
+            ]
+        ]
+
+    let expensesView (giftList: PlannedGift list) (personList: Person list) dispatch =
         DockPanel.create [
             DockPanel.children [
                 StackPanel.create [
                     StackPanel.orientation Orientation.Vertical
                     StackPanel.margin 25.0
+                    StackPanel.dock Dock.Top
                     StackPanel.spacing 15.0
                     StackPanel.name "Expenses Info"
                     StackPanel.children [
@@ -76,10 +109,24 @@ module ExpensesView =
                         ]
                         Grid.create [
                             Grid.columnDefinitions "1*, 1*, 1*, 1*"
+                            Grid.rowDefinitions ("Auto" +
+                                (
+                                    (personList.Length, ",Auto")
+                                    ||> String.replicate
+                                )
+                            )
+                            Grid.children (List.concat [
+                                headlineGifts()
+                            ])
                         ]
                         Grid.create [
                             Grid.columnDefinitions "1*, 1*, 1*"
-                            Grid.rowDefinitions "2"
+                            Grid.rowDefinitions "Auto, Auto"
+                            Grid.children ( List.concat [
+                                headlineTotalExpenses()
+                                getTotalValues personList giftList
+                            ]
+                            )
                         ]
                     ]
                 ]
