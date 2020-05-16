@@ -142,7 +142,7 @@ module View =
         | EasyView -> EasyViewView.easyView state.easyViewState state.planer dispatch
         | NotEasyView -> NotEasyViewView.notEasyView state.planer state.persons dispatch
         | NewPresent -> NewGiftView.view state.newGiftState state.persons (NewGiftMsg >> dispatch) (fun () -> SaveNewGift |> dispatch)
-        | Expenses -> expensesView state dispatch
+        | Expenses -> ExpensesView.expensesView state.planer state.persons dispatch
         | _ -> DockPanel.create []
 
     let view (state: State) dispatch =
