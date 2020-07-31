@@ -21,6 +21,7 @@ module View =
         | NewPresent
         | Expenses
         | Stats
+        | Settings
 
     type State = {
         planer: PlannedGift list
@@ -30,13 +31,14 @@ module View =
         easyViewState: EasyViewView.State
     }
 
-    type Msg =
+    type Msg<'v> =
         | ChangeMode of Modus
-        | NewGiftMsg of NewGiftView.Msg
+        | NewGiftMsg of NewGiftView.Msg<'v>
         | SaveNewGift
 
     let init () =
-        let giftList, personList = load ()
+        let settingList = loadSettings ()
+        let giftList, personList = loadGift ()
         {
           planer = giftList
           persons = personList
@@ -45,7 +47,7 @@ module View =
           easyViewState = EasyViewView.init()
         }
 
-    let update (msg: Msg) state =
+    let update msg state =
         match msg with
         | ChangeMode newMode ->
             { state with modus = newMode }
@@ -68,7 +70,7 @@ module View =
                         | None ->
                             List.append state.persons [ newPerson state.newGiftState.person ]
 
-                save newGiftList personList
+                saveGift newGiftList personList
                 { state with
                     persons = personList
                     planer = newGiftList
@@ -138,23 +140,43 @@ module View =
             ]
         ]
 
+    let settingsView (state: State) dispatch =
+        DockPanel.create [
+            DockPanel.margin 5.0
+            DockPanel.children [
+                TextBlock.create [
+                    TextBlock.text "Einstellungen erforderlich"
+                ]
+            ]
+        ]
+
     let modeView (state: State) dispatch =
         match state.modus with
         | EasyView -> EasyViewView.easyView state.easyViewState state.planer dispatch
         | NotEasyView -> NotEasyViewView.notEasyView state.planer state.persons dispatch
         | NewPresent -> NewGiftView.view state.newGiftState state.persons (NewGiftMsg >> dispatch) (fun () -> SaveNewGift |> dispatch)
         | Expenses -> ExpensesView.expensesView state.planer state.persons dispatch
+        | Settings -> settingsView state dispatch
         | _ -> DockPanel.create []
 
+
     let view (state: State) dispatch =
-        DockPanel.create [
-            DockPanel.children [
-                Border.create [
-                    Border.borderThickness (0.0, 0.0, 2.0, 0.0)
-                    Border.borderBrush "black"
-                    Border.dock Dock.Left
-                    Border.child (menu state dispatch)
+        match state.modus with
+        | Settings ->
+            DockPanel.create [
+                DockPanel.children [
+                    modeView state dispatch
                 ]
-                modeView state dispatch
             ]
-        ]
+        | _ ->
+            DockPanel.create [
+                DockPanel.children [
+                    Border.create [
+                        Border.borderThickness (0.0, 0.0, 2.0, 0.0)
+                        Border.borderBrush "black"
+                        Border.dock Dock.Left
+                        Border.child (menu state dispatch)
+                    ]
+                    modeView state dispatch
+                ]
+            ]

@@ -5,29 +5,48 @@ open FSharp.Json
 open System.IO
 
 open WeihnachtsgeschenkePlaner.Types
+open WeihnachtsgeschenkePlaner.Settings
 
 module FileManagement =
-    let private filePath = "gift.json"
+    let private giftFilePath = "gift.json"
+    let private settingsFilePath = "settings.json"
 
-    type SaveStructure = {
+    type GiftSaveStructure = {
         giftList: PlannedGift list
         personList: Person list
     }
 
-    let save (giftList: PlannedGift list) (personList: Person list) =
+    type SettingSaveStructure = {
+        settingList: Settings list
+    }
+
+    let saveGift (giftList: PlannedGift list) (personList: Person list) =
         let json =
             { giftList = giftList; personList = personList }
             |> Json.serialize
-        File.WriteAllText (filePath, json)
+        File.WriteAllText (giftFilePath, json)
 
-    let load () =
-        match File.Exists filePath with
+    let saveSettings (settingList: Settings list) =
+        let json =
+            {settingList = settingList }
+            |> Json.serialize
+        File.WriteAllText (settingsFilePath, json)
+
+    let loadGift () =
+        match File.Exists giftFilePath with
         | false -> ([], [])
         | true ->
-            File.ReadAllText filePath
-            |> Json.deserialize<SaveStructure>
+            File.ReadAllText giftFilePath
+            |> Json.deserialize<GiftSaveStructure>
             |> fun s -> s.giftList, s.personList
 
+    let loadSettings () =
+        match File.Exists settingsFilePath with
+        | false -> ([])
+        | true ->
+            File.ReadAllText settingsFilePath
+            |> Json.deserialize<SettingSaveStructure>
+            |> fun s -> s.settingList
 
 module GiftManagement =
     let (|Float|_|) (str: string) =

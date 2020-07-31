@@ -10,6 +10,10 @@ module Types =
         plannedExpenses: float option
     }
 
+    module MaybePersonLenses =
+        let name = Lens((fun p -> p.name), (fun p n -> { p with name = n }))
+        let plannedExpenses = Lens((fun p -> p.plannedExpenses), (fun p pe -> { p with plannedExpenses = pe }))
+
     type MaybeGift = {
         description: string option
         totalCosts: float option
@@ -32,6 +36,9 @@ module Types =
         split: MaybeSplit list
         purchaseStatus: MaybePurchaseStatus
     }
+
+    module MaybePlannedGiftLenses =
+        let receiver = Lens((fun p -> p.receiver), (fun p n -> { p with receiver = n }))
 
     type Person = {
         name: PersonName
@@ -94,3 +101,12 @@ module Types =
             splitList = splitList
             purchaseStatus = purchaseStatus
         }
+
+ module Settings =
+    type Settings = {
+        year: int option
+        filePath: string option
+    }
+    type Year = int option
+    type Filepath = string option
+
