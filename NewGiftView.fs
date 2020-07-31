@@ -19,9 +19,19 @@ module NewGiftView =
         person: MaybePerson
     }
 
-    type Msg =
+    module StateLenses =
+        let person = Lens((fun s -> s.person), (fun s p -> { s with person = p }))
+        let newPlannedGift = Lens((fun s -> s.newPlannedGift), (fun s p -> { s with newPlannedGift = p }))
+
+        let personName = person << MaybePersonLenses.name
+        let personPlannedExpenses = person << MaybePersonLenses.plannedExpenses
+        let newPlannedGiftReceiver = newPlannedGift << MaybePlannedGiftLenses.receiver
+
+    type LensValuePair<'v> = Lens<State, 'v> * 'v
+
+    type Msg<'v> =
+        | LensesMsg of LensValuePair<'v> list
         | SetMaybePersonName of PersonName option
-        | SetMaybePersonPlannedExpenses of float option
         | SetMaybeGiftDescription of string option
         | SetMaybeGiftCosts of float option
         | SetMaybePurchaseStatusWhoBuys of PersonName option
@@ -34,18 +44,15 @@ module NewGiftView =
             person = { name = None; plannedExpenses = None }
         }
 
-    let update (msg: Msg) state =
+    let update msg state =
         match msg with
+        | LensesMsg lensValuePairList ->
+            lensValuePairList
+            |> List.fold (fun state (lens, value) -> setl lens value state) state
         | SetMaybePersonName name ->
-            // TODO: Lenses
-            let geschenkEmpfänger = { state.newPlannedGift with receiver = name }
-            let person = { state.person with name = name }
-            { state with
-                newPlannedGift = geschenkEmpfänger
-                person = person }
-        | SetMaybePersonPlannedExpenses expense ->
-            let person = {state.person with plannedExpenses = expense}
-            { state with person = person}
+            state
+            |> setl StateLenses.personName name
+            |> setl StateLenses.newPlannedGiftReceiver name
         | SetMaybeGiftDescription description ->
             let gift = {state.newPlannedGift.gift with description = description}
             let geschenkEmpfänger = { state.newPlannedGift with gift = gift}
@@ -118,7 +125,7 @@ module NewGiftView =
                     TextBox.width 400.0
                     TextBox.onTextChanged (
                         function
-                        | Float newExpense -> Some newExpense |> SetMaybePersonPlannedExpenses |> dispatch
+                        | Float newExpense -> [(StateLenses.personPlannedExpenses, Some newExpense)] |> LensesMsg |> dispatch
                         | _ -> ()
                     )
                 ]

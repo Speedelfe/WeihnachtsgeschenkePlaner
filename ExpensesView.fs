@@ -88,7 +88,8 @@ module ExpensesView =
             TextBlock.create [
                 TextBlock.column 1
                 TextBlock.row (index + 1)
-                TextBlock.text (match person.plannedExpenses with
+                TextBlock.text (
+                    match person.plannedExpenses with
                     |Some expense -> expense |> string
                     |None -> 0.0 |> string)
             ]

@@ -5,6 +5,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Lenses.fs" />
     <Compile Include="Types.fs" />
     <Compile Include="Funktionen.fs" />
     <Compile Include="NewGiftView.fs"/>
